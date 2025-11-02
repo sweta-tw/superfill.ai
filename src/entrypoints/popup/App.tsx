@@ -1,12 +1,3 @@
-import {
-  SettingsIcon,
-  SparklesIcon,
-  TargetIcon,
-  TrophyIcon,
-} from "lucide-react";
-import { useState } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
-import { toast } from "sonner";
 import { EntryCard } from "@/components/features/memory/entry-card";
 import { EntryForm } from "@/components/features/memory/entry-form";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +41,15 @@ import { createLogger } from "@/lib/logger";
 import { keyVault } from "@/lib/security/key-vault";
 import { store } from "@/lib/storage";
 import { useMemoryStore } from "@/stores/memory";
+import {
+  SettingsIcon,
+  SparklesIcon,
+  TargetIcon,
+  TrophyIcon,
+} from "lucide-react";
+import { useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
+import { toast } from "sonner";
 
 const logger = createLogger("popup");
 
@@ -106,9 +106,9 @@ export const App = () => {
       const autofillService = getAutofillService();
       autofillService.startAutofillOnActiveTab(apiKey || undefined);
 
-      setTimeout(() => {
-        window.close();
-      }, 500);
+      // setTimeout(() => {
+      //   window.close();
+      // }, 500);
     } catch (error) {
       logger.error("Autofill error:", error);
       toast.error(

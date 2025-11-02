@@ -5,12 +5,14 @@ import {
   getSessionService,
   registerSessionService,
 } from "@/lib/autofill/session-service";
+import { tracerProvider } from "@/lib/instrumentation";
 import { createLogger } from "@/lib/logger";
 import { registerKeyValidationService } from "@/lib/security/key-validation-service";
 
 const logger = createLogger("background");
 
 export default defineBackground(() => {
+  tracerProvider.register();
   registerCategorizationService();
   registerKeyValidationService();
   registerAutofillService();

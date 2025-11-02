@@ -36,10 +36,6 @@ export const CONFIDENCE_LEVELS = {
 
 export const MIN_MATCH_CONFIDENCE = 0.35;
 
-export const AUTO_FILL_THRESHOLD = 0.75;
-
-export const MAX_FIELD_CONTEXT_TOKENS = 100;
-
 export const STOP_WORDS = new Set<string>([
   "the",
   "and",

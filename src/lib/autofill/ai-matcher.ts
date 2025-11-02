@@ -1,5 +1,3 @@
-import { generateObject } from "ai";
-import { z } from "zod";
 import { getAIModel } from "@/lib/ai/model-factory";
 import { createLogger } from "@/lib/logger";
 import type { AIProvider } from "@/lib/providers/registry";
@@ -8,7 +6,12 @@ import type {
   CompressedMemoryData,
   FieldMapping,
 } from "@/types/autofill";
-import { AUTO_FILL_THRESHOLD, MIN_MATCH_CONFIDENCE } from "./constants";
+import { updateActiveObservation, updateActiveTrace } from "@langfuse/tracing";
+import { trace } from "@opentelemetry/api";
+import { generateObject } from "ai";
+import { z } from "zod";
+import { langfuseSpanProcessor } from "../instrumentation";
+import { MIN_MATCH_CONFIDENCE } from "./constants";
 import { FallbackMatcher } from "./fallback-matcher";
 import { createEmptyMapping, roundConfidence } from "./mapping-utils";
 
@@ -105,25 +108,69 @@ export class AIMatcher {
     provider: AIProvider,
     apiKey: string,
   ): Promise<AIBatchMatchResult> {
-    const model = getAIModel(provider, apiKey);
+    try {
+      const model = getAIModel(provider, apiKey);
 
-    const systemPrompt = this.buildSystemPrompt();
-    const userPrompt = this.buildUserPrompt(fields, memories);
+      const systemPrompt = this.buildSystemPrompt();
+      const userPrompt = this.buildUserPrompt(fields, memories);
 
-    logger.info(`AI matching with ${provider} for ${fields.length} fields`);
+      logger.info(`AI matching with ${provider} for ${fields.length} fields`);
 
-    const result = await generateObject({
-      model,
-      schema: AIBatchMatchSchema,
-      schemaName: "FieldMemoryMatches",
-      schemaDescription:
-        "Mapping of form fields to stored memory entries based on semantic similarity",
-      system: systemPrompt,
-      prompt: userPrompt,
-      temperature: 0.3,
-    });
+      updateActiveObservation({
+        input: { fields, memories, provider },
+      });
+      updateActiveTrace({
+        name: "superfill:memory-categorization",
+        input: { fields, memories, provider },
+      });
 
-    return result.object;
+      const result = await generateObject({
+        model,
+        schema: AIBatchMatchSchema,
+        schemaName: "FieldMemoryMatches",
+        schemaDescription:
+          "Mapping of form fields to stored memory entries based on semantic similarity",
+        system: systemPrompt,
+        prompt: userPrompt,
+        temperature: 0.3,
+        experimental_telemetry: {
+          isEnabled: true,
+          functionId: "field-matching",
+          metadata: {
+            fieldCount: fields.length,
+            fields: JSON.stringify(fields),
+            memoryCount: memories.length,
+            memories: JSON.stringify(memories),
+            provider,
+          },
+        },
+      });
+
+      updateActiveObservation({
+        output: result.object,
+      });
+      updateActiveTrace({
+        output: result.object,
+      });
+      trace.getActiveSpan()?.end();
+
+      return result.object;
+    } catch (error) {
+      logger.error("AI matching failed:", error);
+
+      updateActiveObservation({
+        output: error,
+        level: "ERROR",
+      });
+      updateActiveTrace({
+        output: error,
+      });
+      trace.getActiveSpan()?.end();
+
+      throw error;
+    } finally {
+      (async () => await langfuseSpanProcessor.forceFlush())();
+    }
   }
 
   private buildSystemPrompt(): string {
@@ -237,7 +284,6 @@ For each field, determine:
         confidence,
         reasoning: aiMatch.reasoning || "AI-powered semantic match",
         alternativeMatches,
-        autoFill: confidence >= AUTO_FILL_THRESHOLD,
       };
     });
   }

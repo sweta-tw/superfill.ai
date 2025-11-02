@@ -144,10 +144,17 @@ class AutofillService {
         tabId,
       );
 
+      const userSettings = await store.userSettings.getValue();
+
       try {
         await contentAutofillMessaging.sendMessage(
           "showPreview",
-          this.buildPreviewPayload(forms, processingResult, sessionId),
+          this.buildPreviewPayload(
+            forms,
+            processingResult,
+            sessionId,
+            userSettings.confidenceThreshold,
+          ),
           tabId,
         );
       } catch (previewError) {
@@ -391,7 +398,6 @@ class AutofillService {
       confidence: SIMPLE_FIELD_CONFIDENCE,
       reasoning: `Direct ${purpose} match with validation`,
       alternativeMatches,
-      autoFill: true,
     };
   }
 
@@ -411,7 +417,6 @@ class AutofillService {
     }
 
     if (purpose === "name") {
-      // Name validation: 2-100 chars, contains letters
       if (value.length >= 2 && value.length <= 100 && /[a-z]/i.test(value)) {
         return 0.95;
       }
@@ -524,10 +529,42 @@ class AutofillService {
     forms: DetectedFormSnapshot[],
     processingResult: AutofillResult,
     sessionId: string,
+    confidenceThreshold: number,
   ): PreviewSidebarPayload {
+    logger.info(
+      `Applying confidence threshold: ${confidenceThreshold} to ${processingResult.mappings.length} mappings`,
+    );
+
+    const mappingsWithThreshold = processingResult.mappings.map((mapping) => {
+      const meetsThreshold =
+        mapping.memoryId !== null &&
+        mapping.value !== null &&
+        mapping.confidence >= confidenceThreshold;
+
+      if (mapping.memoryId !== null) {
+        logger.debug(
+          `Field ${mapping.fieldOpid}: confidence=${mapping.confidence}, threshold=${confidenceThreshold}, autoFill=${meetsThreshold}`,
+        );
+      }
+
+      return {
+        ...mapping,
+        autoFill: meetsThreshold,
+      };
+    });
+
+    const autoEnabledCount = mappingsWithThreshold.filter(
+      (m) => m.autoFill,
+    ).length;
+
+    logger.info(
+      `${autoEnabledCount} of ${mappingsWithThreshold.length} fields auto-enabled based on threshold`,
+      mappingsWithThreshold,
+    );
+
     return {
       forms,
-      mappings: processingResult.mappings,
+      mappings: mappingsWithThreshold,
       processingTime: processingResult.processingTime,
       sessionId,
     };

@@ -5,7 +5,7 @@ type MappingBase = {
   confidence: number;
   reasoning: string;
   alternativeMatches: unknown;
-  autoFill: boolean;
+  autoFill?: boolean;
 };
 
 export const createEmptyMapping = <
@@ -23,7 +23,6 @@ export const createEmptyMapping = <
     confidence: 0,
     reasoning: reason,
     alternativeMatches: [] as TMapping["alternativeMatches"],
-    autoFill: false,
   };
 
   return {

@@ -1,8 +1,11 @@
-import { generateObject } from "ai";
-import { z } from "zod";
 import { getAIModel } from "@/lib/ai/model-factory";
 import { createLogger } from "@/lib/logger";
 import type { AIProvider } from "@/lib/providers/registry";
+import { updateActiveObservation, updateActiveTrace } from "@langfuse/tracing";
+import { trace } from "@opentelemetry/api";
+import { generateObject } from "ai";
+import { z } from "zod";
+import { langfuseSpanProcessor } from "../instrumentation";
 
 const logger = createLogger("ai:categorization");
 
@@ -120,6 +123,14 @@ Be precise and consider context. For example:
       ? `Question: ${question}\nAnswer: ${answer}`
       : `Information: ${answer}`;
 
+    updateActiveObservation({
+      input: { answer, question },
+    });
+    updateActiveTrace({
+      name: "superfill:memory-categorization",
+      input: { answer, question },
+    });
+
     const result = await generateObject({
       model,
       system: systemPrompt,
@@ -128,13 +139,41 @@ Be precise and consider context. For example:
       schemaName: "CategorizationResult",
       schemaDescription: "Categorization and tagging result for user data",
       temperature: 0.3,
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: "memory-categorization",
+        metadata: {
+          hasQuestion: !!question,
+          answerLength: answer.length,
+          provider,
+        },
+      },
     });
+
+    updateActiveObservation({
+      output: result.object,
+    });
+    updateActiveTrace({
+      output: result.object,
+    });
+    trace.getActiveSpan()?.end();
 
     return result.object;
   } catch (error) {
     logger.error("AI categorization failed:", error);
-    // Fallback to rule-based categorization
+
+    updateActiveObservation({
+      output: error,
+      level: "ERROR",
+    });
+    updateActiveTrace({
+      output: error,
+    });
+    trace.getActiveSpan()?.end();
+
     return fallbackCategorization(answer, question);
+  } finally {
+    (async () => await langfuseSpanProcessor.forceFlush())();
   }
 };
 

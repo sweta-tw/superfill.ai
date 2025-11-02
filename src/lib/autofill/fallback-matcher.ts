@@ -5,7 +5,6 @@ import type {
   FieldMapping,
 } from "@/types/autofill";
 import {
-  AUTO_FILL_THRESHOLD,
   FIELD_PURPOSE_KEYWORDS,
   MIN_MATCH_CONFIDENCE,
   STOP_WORDS,
@@ -87,7 +86,6 @@ export class FallbackMatcher {
         confidence,
         reasoning: `Low confidence match (${(confidence * 100).toFixed(0)}%). ${bestCandidate.reasons.join(" · ")}`,
         alternativeMatches,
-        autoFill: false,
       };
     }
 
@@ -98,7 +96,6 @@ export class FallbackMatcher {
       confidence,
       reasoning: bestCandidate.reasons.join(" · "),
       alternativeMatches,
-      autoFill: confidence >= AUTO_FILL_THRESHOLD,
     };
   }
 
