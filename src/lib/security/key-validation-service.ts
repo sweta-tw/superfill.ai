@@ -83,7 +83,12 @@ class KeyValidationService {
   private async testGeminiKey(key: string): Promise<boolean> {
     try {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1/models?key=${key}`,
+        "https://generativelanguage.googleapis.com/v1/models",
+        {
+          headers: {
+            "x-goog-api-key": key,
+          },
+        },
       );
       return response.ok;
     } catch {

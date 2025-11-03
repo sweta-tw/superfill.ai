@@ -9,12 +9,7 @@ export const useProviderModels = (provider: AIProvider) => {
     queryFn: async (): Promise<ModelInfo[]> => {
       const modelService = getModelService();
       const apiKey = await keyVault.getKey(provider);
-      console.log(
-        "Fetching models for provider:",
-        provider,
-        "with apiKey:",
-        apiKey,
-      );
+
       return modelService.getModels(provider, apiKey || undefined);
     },
     staleTime: 1000 * 60 * 5,

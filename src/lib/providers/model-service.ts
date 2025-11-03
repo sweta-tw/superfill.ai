@@ -201,7 +201,12 @@ class ModelService {
   private async fetchGeminiModels(apiKey: string): Promise<ModelInfo[]> {
     try {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`,
+        "https://generativelanguage.googleapis.com/v1/models",
+        {
+          headers: {
+            "x-goog-api-key": apiKey,
+          },
+        },
       );
 
       if (!response.ok) {
