@@ -19,6 +19,7 @@ const userSettings = storage.defineItem<UserSettings>(
     fallback: {
       selectedProvider: "openai",
       autoFillEnabled: true,
+      autopilotMode: false,
       confidenceThreshold: 0.6,
     },
     version: 1,

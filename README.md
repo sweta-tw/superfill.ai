@@ -216,7 +216,7 @@ bun run lint
 - [x] Auto-fill functionality
 - [x] Auto-fill engine
 - [x] Multiple AI provider support (OpenAI, Anthropic, Groq, DeepSeek, Google Gemini)
-- [ ] Autofill directly without preview mode (copilot mode, like Google or Bitwarden autofill)
+- [x] Autofill directly without preview mode (autopilot mode, like Google or Bitwarden autofill) [IN BETA, expect bugs]
 - [ ] Parse pdf to extract content for memory creation
 - [ ] Auto adding memories from filled forms based on user confirmation
 - [ ] Let AI rephrase questions/answers on memory creation
