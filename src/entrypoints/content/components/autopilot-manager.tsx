@@ -58,6 +58,7 @@ type AutopilotManagerOptions = {
 export class AutopilotManager {
   private readonly options: AutopilotManagerOptions;
   private ui: ShadowRootContentScriptUi<Root> | null = null;
+  private reactRoot: Root | null = null;
   private currentProgress: AutofillProgress | null = null;
   private fieldsToFill: AutopilotFillData[] = [];
   private mappingLookup: Map<string, FieldMapping> = new Map();
@@ -79,14 +80,15 @@ export class AutopilotManager {
           host.setAttribute("data-ui-type", "autopilot");
           this.applyTheme(shadow);
 
-          const root = createRoot(container);
+          if (!this.reactRoot) {
+            this.reactRoot = createRoot(container);
+          }
 
-          root.render(this.renderAutopilotLoader());
-
-          return root;
+          return this.reactRoot;
         },
         onRemove: (root) => {
           root?.unmount();
+          this.reactRoot = null;
         },
       });
 
@@ -143,6 +145,10 @@ export class AutopilotManager {
 
       if (this.ui) {
         this.ui.mount();
+      }
+
+      if (this.reactRoot) {
+        this.reactRoot.render(this.renderAutopilotLoader());
       }
 
       logger.info("Showing autopilot progress:", progress.state);
@@ -323,6 +329,7 @@ export class AutopilotManager {
       this.ui = null;
     }
 
+    this.reactRoot = null;
     this.mappingLookup.clear();
     this.currentProgress = null;
     this.fieldsToFill = [];
