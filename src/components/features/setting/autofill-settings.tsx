@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -66,7 +65,7 @@ export const AutofillSettings = () => {
           <Field orientation="horizontal" data-invalid={false}>
             <FieldContent>
               <FieldLabel htmlFor={autopilotModeId}>
-                Autopilot Mode <Badge variant="secondary">BETA</Badge>
+                Autopilot Mode
               </FieldLabel>
               <FieldDescription>
                 Automatically fill fields without showing preview when confidence is above threshold
