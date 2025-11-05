@@ -76,6 +76,7 @@ export class AutopilotManager {
         position: "inline",
         onMount: (container, shadow, host) => {
           host.id = HOST_ID
+          host.setAttribute("data-ui-type", "autopilot");
           this.applyTheme(shadow);
 
           const root = createRoot(container);

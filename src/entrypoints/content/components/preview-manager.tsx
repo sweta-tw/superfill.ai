@@ -451,6 +451,7 @@ export class PreviewSidebarManager {
       anchor: "body",
       onMount: (uiContainer, _shadow, host) => {
         host.id = HOST_ID;
+        host.setAttribute("data-ui-type", "preview");
         uiContainer.innerHTML = "";
 
         const mountPoint = document.createElement("div");

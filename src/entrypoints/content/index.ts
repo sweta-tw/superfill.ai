@@ -280,17 +280,17 @@ export default defineContentScript({
     });
 
     // Temporarily show contentAutofill permanent UI for testing
-    // const manager = ensurePreviewManager(ctx);
-    // manager.showProgress({
-    //   state: "detecting",
-    //   message: "Detecting forms on the page...",
-    // });
     // const manager = ensureAutopilotManager(ctx);
     // await manager.showProgress({
     //   state: "detecting",
     //   message: "Detecting forms on the page...",
     //   fieldsDetected: 5,
     //   fieldsMatched: 2,
+    // });
+    // const manager = ensurePreviewManager(ctx);
+    // manager.showProgress({
+    //   state: "detecting",
+    //   message: "Detecting forms on the page...",
     // });
     // await manager.show({
     //   payload: {
