@@ -221,6 +221,7 @@ bun run lint
 - [ ] Let AI rephrase questions/answers on memory creation
 - [ ] Let AI rephrase answers on auto-fill based on form context
 - [ ] Firefox support
+- [ ] Scrape & import data from Linkedin/Portfolio/Workday/Greenhouse/other famous websites for easier memory addition
 - [ ] Semantic search across stored data
 - [ ] Mark memories as favorites
 - [ ] Browser native autofill integration (bypass extension popup)
