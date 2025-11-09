@@ -220,7 +220,7 @@ bun run lint
 - [ ] Auto adding memories from filled forms based on user confirmation
 - [x] Let AI rephrase questions/answers on memory creation (Thanks [@pratham-kpatil](https://github.com/pratham-kpatil)! 🙏)
 - [x] Top used tags & click-to-add functionality
-- [ ] Let AI rephrase answers on auto-fill based on form context
+- [ ] Let AI rephrase suggested answers on auto-fill based on form, webpage, website & URL context
 - [ ] Firefox support
 - [ ] Scrape & import data from Linkedin/Portfolio/Workday/Greenhouse/other famous websites for easier memory addition
 - [ ] Semantic search across stored data

@@ -1,5 +1,13 @@
 # superfill.ai
 
+## 0.0.6
+
+### Patch Changes
+
+- [`b5a26e2`](https://github.com/superfill-ai/superfill.ai/commit/b5a26e2) Thanks [pratham-kpatil](https://github.com/pratham-kpatil) - fix: delete saved API keys and provider list not updating
+
+- [`f728a8c`](https://github.com/superfill-ai/superfill.ai/commit/f728a8cbecc8930885d3580fa8f4a27d31244c08) Thanks [@mikr13](https://github.com/mikr13)! - feat: top used tags & click-to-add functionality
+
 ## 0.0.5
 
 ### Patch Changes
