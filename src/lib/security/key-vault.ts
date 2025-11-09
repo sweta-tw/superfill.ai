@@ -41,6 +41,11 @@ export class KeyVault {
 
   async getKey(provider: AIProvider): Promise<string | null> {
     const keys = await store.apiKeys.getValue();
+
+    if (!keys[provider]) {
+      return null;
+    }
+
     const encryptedData = keys[provider];
     const fingerprint = await getBrowserFingerprint();
 

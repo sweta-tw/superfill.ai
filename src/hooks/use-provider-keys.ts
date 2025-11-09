@@ -1,5 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import type { AIProvider } from "@/lib/providers/registry";
 import {
   AI_PROVIDERS,
@@ -7,12 +5,11 @@ import {
   validateProviderKey,
 } from "@/lib/providers/registry";
 import { useSettingsStore } from "@/stores/settings";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const PROVIDER_KEYS_QUERY_KEY = ["provider-keys"] as const;
 
-/**
- * Hook to fetch the status of all provider API keys
- */
 export function useProviderKeyStatuses() {
   const getApiKey = useSettingsStore((state) => state.getApiKey);
 
@@ -30,13 +27,10 @@ export function useProviderKeyStatuses() {
 
       return statuses;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 }
 
-/**
- * Hook to save a single API key
- */
 export function useSaveApiKey() {
   const queryClient = useQueryClient();
   const setApiKey = useSettingsStore((state) => state.setApiKey);
@@ -54,12 +48,10 @@ export function useSaveApiKey() {
     }) => {
       const config = getProviderConfig(provider);
 
-      // Client-side validation
       if (config.requiresApiKey && !validateProviderKey(provider, key)) {
         throw new Error(`Invalid ${config.name} API key format`);
       }
 
-      // Store the key (includes server-side validation)
       await setApiKey(provider, key);
 
       return { provider, key };
@@ -67,12 +59,10 @@ export function useSaveApiKey() {
     onSuccess: async ({ provider }) => {
       const config = getProviderConfig(provider);
 
-      // Invalidate the query to refresh the UI
       await queryClient.invalidateQueries({
         queryKey: PROVIDER_KEYS_QUERY_KEY,
       });
 
-      // Set as selected provider
       await setSelectedProvider(provider);
 
       toast.success(`${config.name} API key saved successfully`);
@@ -83,9 +73,6 @@ export function useSaveApiKey() {
   });
 }
 
-/**
- * Hook to delete an API key
- */
 export function useDeleteApiKey() {
   const queryClient = useQueryClient();
   const deleteApiKey = useSettingsStore((state) => state.deleteApiKey);
@@ -98,7 +85,6 @@ export function useDeleteApiKey() {
     onSuccess: async (provider) => {
       const config = getProviderConfig(provider);
 
-      // Invalidate the query to refresh the UI
       await queryClient.invalidateQueries({
         queryKey: PROVIDER_KEYS_QUERY_KEY,
       });
@@ -111,9 +97,6 @@ export function useDeleteApiKey() {
   });
 }
 
-/**
- * Hook to save multiple API keys at once
- */
 export function useSaveMultipleApiKeys() {
   const queryClient = useQueryClient();
   const saveApiKey = useSaveApiKey();
@@ -128,14 +111,12 @@ export function useSaveMultipleApiKeys() {
         throw new Error("Please enter at least one API key");
       }
 
-      // Save all keys
       const results = await Promise.allSettled(
         entries.map(([provider, key]) =>
           saveApiKey.mutateAsync({ provider: provider as AIProvider, key }),
         ),
       );
 
-      // Check for failures
       const failures = results.filter((r) => r.status === "rejected");
       if (failures.length > 0) {
         const firstError = (failures[0] as PromiseRejectedResult).reason;
