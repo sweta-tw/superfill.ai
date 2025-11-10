@@ -3,7 +3,6 @@ import { z } from "zod";
 import { contentAutofillMessaging } from "@/lib/autofill/content-autofill-messaging";
 import { getSessionService } from "@/lib/autofill/session-service";
 import { createLogger } from "@/lib/logger";
-import type { AIProvider } from "@/lib/providers/registry";
 import { store } from "@/lib/storage";
 import { useSettingsStore } from "@/stores/settings";
 import type {
@@ -16,6 +15,7 @@ import type {
   PreviewSidebarPayload,
 } from "@/types/autofill";
 import type { MemoryEntry } from "@/types/memory";
+import { ERROR_MESSAGE_PROVIDER_NOT_CONFIGURED } from "../errors";
 import { AIMatcher } from "./ai-matcher";
 import {
   MAX_FIELDS_PER_PAGE,
@@ -434,8 +434,20 @@ class AutofillService {
 
     try {
       const settingStore = useSettingsStore.getState();
-      const provider = settingStore.selectedProvider as AIProvider;
+      const provider = settingStore.selectedProvider;
+
+      if (!provider) {
+        throw new Error(ERROR_MESSAGE_PROVIDER_NOT_CONFIGURED);
+      }
+
       const selectedModel = settingStore.selectedModels?.[provider];
+
+      logger.info(
+        "AutofillService: Using AI provider",
+        provider,
+        "with model",
+        selectedModel,
+      );
 
       if (!apiKey) {
         logger.warn("No API key found, using fallback matcher");

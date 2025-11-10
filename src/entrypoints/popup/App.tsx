@@ -50,7 +50,7 @@ import {
   ERROR_MESSAGE_API_KEY_NOT_CONFIGURED,
   ERROR_MESSAGE_PROVIDER_NOT_CONFIGURED,
 } from "@/lib/errors";
-import { createLogger } from "@/lib/logger";
+import { createLogger, DEBUG } from "@/lib/logger";
 import { keyVault } from "@/lib/security/key-vault";
 import { store } from "@/lib/storage";
 import { useMemoryStore } from "@/stores/memory";
@@ -136,9 +136,11 @@ export const App = () => {
       const autofillService = getAutofillService();
       autofillService.startAutofillOnActiveTab(apiKey || undefined);
 
-      setTimeout(() => {
-        window.close();
-      }, 600);
+      if (!DEBUG) {
+        setTimeout(() => {
+          window.close();
+        }, 600);
+      }
     } catch (error) {
       logger.error("Autofill error:", error);
       toast.error(

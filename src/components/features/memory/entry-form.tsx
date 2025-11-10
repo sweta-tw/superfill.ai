@@ -1,3 +1,9 @@
+import { useForm, useStore } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
+import { Loader2Icon, SparklesIcon, TagsIcon } from "lucide-react";
+import { useEffect } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
@@ -21,13 +27,6 @@ import { keyVault } from "@/lib/security/key-vault";
 import { store } from "@/lib/storage";
 import { useMemoryStore } from "@/stores/memory";
 import type { MemoryEntry } from "@/types/memory";
-import { useForm, useStore } from "@tanstack/react-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2Icon, SparklesIcon } from "lucide-react";
-import { useEffect } from "react";
-import { toast } from "sonner";
-import { useDebounce } from "use-debounce";
-import { z } from "zod";
 
 const logger = createLogger("component:entry-form");
 
@@ -110,9 +109,6 @@ export function EntryForm({
   const answer = useStore(form.store, (state) => state.values.answer);
   const question = useStore(form.store, (state) => state.values.question);
 
-  const [debouncedAnswer] = useDebounce(answer, 500);
-  const [debouncedQuestion] = useDebounce(question, 500);
-
   const rephraseMutation = useMutation({
     mutationFn: async ({
       currentQuestion,
@@ -164,9 +160,8 @@ export function EntryForm({
     },
   });
 
-  const categorizeQuery = useQuery({
-    queryKey: ["categorize", debouncedAnswer, debouncedQuestion],
-    queryFn: async () => {
+  const categorizeAndTaggingMutation = useMutation({
+    mutationFn: async () => {
       const aiSettings = await store.aiSettings.getValue();
       if (!aiSettings.selectedProvider) {
         toast.warning(ERROR_MESSAGE_PROVIDER_NOT_CONFIGURED, {
@@ -196,37 +191,27 @@ export function EntryForm({
       }
 
       return categorizationService.categorize(
-        debouncedAnswer,
-        debouncedQuestion,
+        answer,
+        question,
         apiKey || undefined,
       );
     },
-    enabled: !!debouncedAnswer && mode === "create",
-    staleTime: 1000 * 60 * 5,
-    retry: 1,
+    onSuccess: (data) => {
+      if (data?.category) {
+        form.setFieldValue("category", data.category);
+      }
+
+      if (data?.tags && data.tags.length > 0) {
+        form.setFieldValue("tags", [
+          ...form.getFieldValue("tags"),
+          ...data.tags,
+        ]);
+      }
+    },
   });
 
-  const isAiCategorizing = categorizeQuery.isLoading;
+  const isAiCategorizing = categorizeAndTaggingMutation.isPending;
   const isAiRephrasing = rephraseMutation.isPending;
-
-  useEffect(() => {
-    if (mode === "create" && debouncedAnswer && categorizeQuery.data) {
-      const currentCategory = form.getFieldValue("category");
-      const currentTags = form.getFieldValue("tags");
-
-      if (!currentCategory && categorizeQuery.data.category) {
-        form.setFieldValue("category", categorizeQuery.data.category);
-      }
-
-      if (
-        currentTags.length === 0 &&
-        categorizeQuery.data.tags &&
-        categorizeQuery.data.tags.length > 0
-      ) {
-        form.setFieldValue("tags", categorizeQuery.data.tags);
-      }
-    }
-  }, [categorizeQuery.data, debouncedAnswer, mode, form]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -270,6 +255,19 @@ export function EntryForm({
     if (!currentTags.includes(tag)) {
       form.setFieldValue("tags", [...currentTags, tag]);
     }
+  };
+
+  const handleCategorizingAndTagging = () => {
+    const currentAnswer = form.getFieldValue("answer");
+
+    if (!currentAnswer) {
+      toast.error("Please provide an answer before categorizing.");
+      return;
+    }
+
+    toast.promise(categorizeAndTaggingMutation.mutateAsync(), {
+      success: "Content categorized and tagged successfully!",
+    });
   };
 
   return (
@@ -334,21 +332,39 @@ export function EntryForm({
           }}
         </form.Field>
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="w-full"
-          onClick={handleRephrase}
-          disabled={isAiRephrasing || isAiCategorizing || !answer.trim()}
-        >
-          {isAiRephrasing ? (
-            <Loader2Icon className="mr-2 size-4 animate-spin" />
-          ) : (
-            <SparklesIcon className="mr-2 size-4" />
+        <div className="flex gap-2 flex-1 justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            size="xs"
+            onClick={handleRephrase}
+            disabled={isAiRephrasing || !answer.trim()}
+          >
+            {isAiRephrasing ? (
+              <Loader2Icon className="mr-2 size-3 animate-spin" />
+            ) : (
+              <SparklesIcon className="mr-2 size-3" />
+            )}
+            Rephrase with AI
+          </Button>
+
+          {mode === "create" && (
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              onClick={handleCategorizingAndTagging}
+              disabled={isAiCategorizing || !answer.trim()}
+            >
+              {isAiCategorizing ? (
+                <Loader2Icon className="mr-2 size-3 animate-spin" />
+              ) : (
+                <TagsIcon className="mr-2 size-3" />
+              )}
+              Categorize & Tag with AI
+            </Button>
           )}
-          Rephrase with AI
-        </Button>
+        </div>
 
         <form.Field name="category">
           {(field) => {
