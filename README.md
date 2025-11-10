@@ -209,27 +209,26 @@ bun run lint
 - [x] Search, filter, sort functionality
 - [x] Import/Export (CSV)
 - [x] Theme support (light/dark)
-- [x] Virtual scrolling performance
 - [x] Settings management
 - [x] Form detection algorithm
 - [x] Field-to-memory matching
-- [x] Auto-fill functionality
-- [x] Auto-fill engine
+- [x] Auto-fill engine with confidence scoring
 - [x] Multiple AI provider support (OpenAI, Anthropic, Groq, DeepSeek, Google Gemini)
 - [x] Autofill directly without preview mode (autopilot mode)
 - [x] Let AI rephrase questions/answers on memory creation (Thanks [@pratham-kpatil](https://github.com/pratham-kpatil)! 🙏)
 - [x] Top used tags & click-to-add functionality
+- [x] Ollama AI provider support
 - [ ] Let AI rephrase suggested answers on auto-fill based on form, webpage, website & URL context
-- [ ] Firefox support
-- [ ] Scrape & import data from Linkedin/Portfolio/Workday/Greenhouse/other famous websites for easier memory addition
+- [ ] Firefox support (in-progress, submission made to Firefox Add-ons store)
 - [ ] Semantic search across stored data
 - [ ] Mark memories as favorites
-- [ ] Browser native autofill integration (bypass extension popup)
 
 ### 📋 In Progress (Phase 2, Nov 15th)
 
 #### Free features
 
+- [ ] Browser native autofill integration (bypass extension popup)
+- [ ] Scrape & import data from Linkedin/Portfolio/Workday/Greenhouse/other famous websites for easier memory addition
 - [ ] Auto adding memories from filled forms based on user confirmation
 - [ ] MCP support (Multi-Context Profiles)
 - [ ] Upvote/downvote memory suggestions

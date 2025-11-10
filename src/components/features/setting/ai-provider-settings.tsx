@@ -45,7 +45,6 @@ export const AiProviderSettings = () => {
   const { data: keyStatuses } = useProviderKeyStatuses();
   const saveKeyWithModelMutation = useSaveApiKeyWithModel();
   const deleteKeyMutation = useDeleteApiKey();
-
   const allConfigs = getAllProviderConfigs();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: need to run when keyStatuses change
@@ -59,10 +58,15 @@ export const AiProviderSettings = () => {
 
   const handleSaveApiKey = async (provider: AIProvider) => {
     const key = providerKeys[provider];
-    if (!key?.trim()) return;
+    const apiKey = provider === "ollama" ? "ollama-local" : key;
+    if (provider !== "ollama" && !key?.trim()) return;
 
     const defaultModel = getDefaultModel(provider);
-    await saveKeyWithModelMutation.mutateAsync({ provider, key, defaultModel });
+    await saveKeyWithModelMutation.mutateAsync({
+      provider,
+      key: apiKey,
+      defaultModel,
+    });
     setProviderKeys((prev) => ({ ...prev, [provider]: "" }));
   };
 

@@ -15,6 +15,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -54,6 +55,7 @@ import { createLogger, DEBUG } from "@/lib/logger";
 import { keyVault } from "@/lib/security/key-vault";
 import { store } from "@/lib/storage";
 import { useMemoryStore } from "@/stores/memory";
+import { useSettingsStore } from "@/stores/settings";
 
 const logger = createLogger("popup");
 
@@ -64,6 +66,8 @@ export const App = () => {
   const deleteEntry = useMemoryStore((state) => state.deleteEntry);
   const initialized = useMemoryStore((state) => state.initialized);
   const error = useMemoryStore((state) => state.error);
+  const selectedModels = useSettingsStore((state) => state.selectedModels);
+  const selectedProvider = useSettingsStore((state) => state.selectedProvider);
   const stats = useMemoryStats();
   const topMemories = useTopMemories(10);
   const [activeTab, setActiveTab] = useState<
@@ -288,7 +292,7 @@ export const App = () => {
               </Button>
             </div>
 
-            <Card>
+            <Card className="gap-2">
               <CardHeader>
                 <CardTitle>Ready to Autofill</CardTitle>
                 <CardDescription>
@@ -296,6 +300,14 @@ export const App = () => {
                   this page using your stored memories.
                 </CardDescription>
               </CardHeader>
+              {selectedProvider && (
+                <CardFooter>
+                  <span className="text-muted-foreground text-xs underline">
+                    Selected model: {selectedModels[selectedProvider] || "N/A"}{" "}
+                    of {selectedProvider}
+                  </span>
+                </CardFooter>
+              )}
             </Card>
 
             <Card>

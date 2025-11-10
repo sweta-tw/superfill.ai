@@ -33,6 +33,21 @@ interface DeepSeekModel {
   name: string;
 }
 
+interface OllamaModel {
+  name: string;
+  model: string;
+  modified_at: string;
+  size: number;
+  digest: string;
+  details: {
+    format: string;
+    family: string;
+    families?: string[];
+    parameter_size: string;
+    quantization_level: string;
+  };
+}
+
 const DEFAULT_MODELS: Record<AIProvider, ModelInfo[]> = {
   openai: [{ id: "gpt-5-nano", name: "GPT-5 Nano" }],
   anthropic: [
@@ -52,6 +67,12 @@ const DEFAULT_MODELS: Record<AIProvider, ModelInfo[]> = {
     {
       id: "models/gemini-2.5-flash",
       name: "Gemini 2.5 Flash",
+    },
+  ],
+  ollama: [
+    {
+      id: "gemma3:4b",
+      name: "Gemma3 - 4b",
     },
   ],
 };
@@ -74,6 +95,8 @@ class ModelService {
           return await this.fetchDeepSeekModels(apiKey);
         case "gemini":
           return await this.fetchGeminiModels(apiKey);
+        case "ollama":
+          return await this.fetchOllamaModels();
         default:
           return DEFAULT_MODELS[provider] || [];
       }
@@ -226,6 +249,38 @@ class ModelService {
       return models.length > 0 ? models : DEFAULT_MODELS.gemini;
     } catch {
       return DEFAULT_MODELS.gemini;
+    }
+  }
+
+  private async fetchOllamaModels(): Promise<ModelInfo[]> {
+    try {
+      const response = await fetch("http://localhost:11434/api/tags");
+
+      if (!response.ok) {
+        return DEFAULT_MODELS.ollama;
+      }
+
+      const data = (await response.json()) as { models: OllamaModel[] };
+      const models = data.models.map((m: OllamaModel) => {
+        const displayName = m.name
+          .split(":")
+          .map((part) =>
+            part
+              .split(/[-_]/)
+              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+              .join(" "),
+          )
+          .join(" - ");
+
+        return {
+          id: m.name,
+          name: displayName,
+        };
+      });
+
+      return models.length > 0 ? models : DEFAULT_MODELS.ollama;
+    } catch {
+      return DEFAULT_MODELS.ollama;
     }
   }
 }

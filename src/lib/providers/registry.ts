@@ -54,15 +54,15 @@ export const PROVIDER_REGISTRY = {
     requiresApiKey: true,
     validateKey: (key: string) => key.startsWith("AIza") && key.length > 20,
   },
-  // ollama: {
-  //   id: "ollama",
-  //   name: "Ollama (Local)",
-  //   keyPrefix: "",
-  //   keyPlaceholder: "Not required for local",
-  //   description: "Run models locally on your machine",
-  //   requiresApiKey: false,
-  //   validateKey: () => true,
-  // },
+  ollama: {
+    id: "ollama",
+    name: "Ollama (Local)",
+    keyPrefix: "",
+    keyPlaceholder: "http://localhost:11434",
+    description: "Run models locally on your machine",
+    requiresApiKey: false,
+    validateKey: () => true,
+  },
 } as const satisfies Record<string, ProviderConfig>;
 
 export type AIProvider = keyof typeof PROVIDER_REGISTRY;

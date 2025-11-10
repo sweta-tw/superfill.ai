@@ -24,6 +24,7 @@ export const useDefaultModel = (provider: AIProvider): string => {
     groq: "llama-4-maverick",
     deepseek: "deepseek-v3",
     gemini: "gemini-2.5-flash",
+    ollama: "llama3.2",
   };
   return defaults[provider];
 };
