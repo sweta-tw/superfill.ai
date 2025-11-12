@@ -243,7 +243,7 @@ class AutofillService {
 
       const memories = allMemories.slice(0, MAX_MEMORIES_FOR_MATCHING);
 
-      const mappings = await this.matchComplexFields(fields, memories, apiKey);
+      const mappings = await this.matchFields(fields, memories, apiKey);
       const allMappings = this.combineMappings(fieldsToProcess, mappings);
       const processingTime = performance.now() - startTime;
 
@@ -266,7 +266,7 @@ class AutofillService {
     }
   }
 
-  private async matchComplexFields(
+  private async matchFields(
     fields: DetectedFieldSnapshot[],
     memories: MemoryEntry[],
     apiKey?: string,
@@ -329,7 +329,6 @@ class AutofillService {
       field.metadata.labelTop,
     ].filter(Boolean) as string[];
 
-    // Remove duplicate labels to reduce AI context usage
     const labels = Array.from(new Set(allLabels));
 
     const context = [
