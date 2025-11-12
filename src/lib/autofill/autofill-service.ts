@@ -320,7 +320,7 @@ class AutofillService {
   }
 
   private compressField(field: DetectedFieldSnapshot): CompressedFieldData {
-    const labels = [
+    const allLabels = [
       field.metadata.labelTag,
       field.metadata.labelAria,
       field.metadata.labelData,
@@ -328,6 +328,9 @@ class AutofillService {
       field.metadata.labelRight,
       field.metadata.labelTop,
     ].filter(Boolean) as string[];
+
+    // Remove duplicate labels to reduce AI context usage
+    const labels = Array.from(new Set(allLabels));
 
     const context = [
       field.metadata.placeholder,
